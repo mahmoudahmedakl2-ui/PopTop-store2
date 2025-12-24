@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PopTop - لجميع اللابتوب والكومبيوتر</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .image-preview-overlay {
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Notifications Container -->
+    <div id="toast-container" class="fixed top-4 left-4 z-50 flex flex-col gap-2"></div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-md transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20">
+                <!-- Logo & Brand -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer" onclick="app.navTo('home')">
+                        <div class="relative">
+                            <!-- Background Image -->
+                            <div class="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl opacity-90"></div>
+                            <div class="absolute inset-0 opacity-20 rounded-xl" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2260%22%3E💻%3C/text%3E%3C/svg%3E'); background-size: cover;"></div>
+                            <!-- Icon -->
+                            <div class="relative p-3 text-white">
+                                <i class="fa-solid fa-laptop-code text-2xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <h1 class="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400" data-translate="site_title">PopTop</h1>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold" data-translate="site_subtitle">لجميع اللابتوب والكومبيوتر</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex md:items-center md:gap-6">
+                    <button onclick="app.navTo('home')" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition" data-translate="nav_home">الرئيسية</button>
+                    <button onclick="app.navTo('reviews')" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition" data-translate="nav_reviews">التقييمات</button>
+                    <button onclick="app.navTo('reports')" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition" data-translate="nav_reports">الإبلاغات</button>
+                    <button onclick="app.navTo('about')" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition" data-translate="nav_about">عن الموقع</button>
+                    
+                    <!-- Auth Buttons -->
+                    <div id="nav-auth-buttons" class="flex gap-2">
+                        <button onclick="app.navTo('login')" class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg dark:bg-gray-700 dark:text-blue-400 dark:hover:bg-gray-600 transition" data-translate="nav_login">دخول</button>
+                        <button onclick="app.navTo('register')" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-sm" data-translate="nav_register">تسجيل</button>
+                    </div>
+
+                    <!-- User Menu (Hidden by default) -->
+                    <div id="nav-user-menu" class="hidden flex items-center gap-4">
+                        <div id="delivery-timer-badge" class="hidden px-3 py-1 text-xs font-bold text-green-700 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300 animate-pulse">
+                            <i class="fa-solid fa-truck-fast ml-1"></i> <span data-translate="free_shipping">شحن مجاني</span>
+                        </div>
+                        <button id="dashboard-btn" onclick="app.navTo('dashboard')" class="hidden px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition shadow-sm">
+                            <i class="fa-solid fa-gauge-high ml-1"></i> <span data-translate="nav_dashboard">لوحة التحكم</span>
+                        </button>
+                        <button onclick="app.logout()" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2 rounded-lg transition" title="تسجيل خروج">
+                            <i class="fa-solid fa-right-from-bracket text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Language Toggle -->
+                    <button onclick="app.toggleLanguage()" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition font-bold">
+                        <span id="lang-toggle-text">EN</span>
+                    </button>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="flex items-center md:hidden gap-2">
+                    <button onclick="app.toggleLanguage()" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 font-bold">
+                        <span id="lang-toggle-text-mobile">EN</span>
+                    </button>
+                    <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <button onclick="app.navTo('home')" class="block w-full text-right px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700">الرئيسية</button>
+                <button onclick="app.navTo('reviews')" class="block w-full text-right px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700">التقييمات</button>
+                <button onclick="app.navTo('reports')" class="block w-full text-right px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700">الإبلاغات</button>
+                <button onclick="app.navTo('about')" class="block w-full text-right px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700">عن الموقع</button>
+                <div id="mobile-auth-buttons" class="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                    <button onclick="app.navTo('login')" class="block w-full text-right px-3 py-2 rounded-md text-base font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700">دخول</button>
+                    <button onclick="app.navTo('register')" class="block w-full text-right px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">تسجيل حساب</button>
+                </div>
+                <div id="mobile-user-menu" class="hidden border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                    <div id="mobile-delivery-status" class="px-3 py-2 text-sm text-green-600 font-bold hidden">
+                        <i class="fa-solid fa-truck-fast"></i> شحن مجاني مفعل
+                    </div>
+                    <button id="mobile-dashboard-btn" onclick="app.navTo('dashboard')" class="hidden block w-full text-right px-3 py-2 rounded-md text-base font-medium text-purple-600 dark:text-purple-400 hover:bg-gray-100 dark:hover:bg-gray-700">لوحة التحكم</button>
+                    <button onclick="app.logout()" class="block w-full text-right px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 dark:hover:bg-gray-700">تسجيل خروج</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="main-content" class="flex-grow container mx-auto px-4 py-8 relative">
+        
+        <!-- VIEW: HOME (Viewer Website) -->
+        <section id="view-home" class="fade-in block">
+            <!-- Hero / Delivery Banner -->
+            <div id="free-delivery-banner" class="hidden mb-8 p-6 bg-gradient-to-l from-green-500 to-emerald-700 rounded-2xl shadow-lg text-white relative overflow-hidden">
+                <div class="md:flex md:items-center md:justify-between relative z-10">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-1" data-translate="free_delivery_title">🎉 مبروك! الشحن مجاني الآن</h2>
+                        <p class="opacity-90 mb-2" data-translate="free_delivery_desc">استمتع بشحن مجاني لجميع الطلبات لمدة 24 ساعة</p>
+                        <div class="flex items-center gap-2 text-lg font-bold bg-white/20 px-4 py-2 rounded-lg w-fit">
+                            <i class="fa-solid fa-clock"></i>
+                            <span data-translate="time_remaining">الوقت المتبقي:</span>
+                            <span id="delivery-countdown" class="font-mono text-yellow-300">23:59:59</span>
+                        </div>
+                    </div>
+                    <div class="text-5xl opacity-20 mt-4 md:mt-0"><i class="fa-solid fa-truck-fast"></i></div>
+                </div>
+                <!-- Decorative Circles -->
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+                <div class="absolute bottom-[-20px] left-10 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-6 mb-8 items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">أحدث المنتجات</h2>
+                    <p class="text-gray-500 dark:text-gray-400">تصفح أفضل ملحقات الكمبيوتر واللابتوب</p>
+                </div>
+                
+                <!-- Search & Filter -->
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <div class="relative">
+                        <input type="text" id="search-input" oninput="app.renderProducts()" placeholder="ابحث عن منتج..." class="w-full sm:w-64 pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <select id="category-filter" onchange="app.renderProducts()" class="w-full sm:w-48 pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors appearance-none cursor-pointer">
+                        <option value="all">كل الأقسام</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Categories Quick Pills -->
+            <div class="flex flex-wrap gap-2 mb-8" id="category-pills">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Product Grid -->
+            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Products populated by JS -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-400">
+                <i class="fa-solid fa-box-open text-6xl mb-4"></i>
+                <p class="text-xl font-medium">لا توجد منتجات متاحة حالياً</p>
+            </div>
+        </section>
+
+        <!-- VIEW: LOGIN -->
+        <section id="view-login" class="fade-in hidden max-w-md mx-auto mt-10">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">تسجيل الدخول</h2>
+                    <p class="text-sm text-gray-500 mt-2">مرحباً بعودتك إلى PopTop</p>
+                </div>
+                <form onsubmit="app.handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">اسم المستخدم</label>
+                        <input type="text" id="login-username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">كلمة المرور</label>
+                        <input type="password" id="login-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-md">
+                        دخول
+                    </button>
+                </form>
+                <div class="mt-6 text-center text-sm">
+                    <p class="text-gray-500">ليس لديك حساب؟ <button onclick="app.navTo('register')" class="text-blue-600 hover:underline font-bold">أنشئ حساب جديد</button></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: REGISTER -->
+        <section id="view-register" class="fade-in hidden max-w-md mx-auto mt-4">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">إنشاء حساب جديد</h2>
+                </div>
+                <form onsubmit="app.handleRegister(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">اسم المستخدم</label>
+                        <input type="text" id="reg-username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">كلمة المرور</label>
+                        <input type="password" id="reg-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    
+                    <!-- Admin Toggle -->
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <input type="checkbox" id="reg-is-admin" onchange="document.getElementById('admin-code-field').classList.toggle('hidden')" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                        <label for="reg-is-admin" class="text-sm font-medium text-gray-700 dark:text-gray-300 select-none cursor-pointer">هل أنت مسؤول (Admin)؟</label>
+                    </div>
+
+                    <div id="admin-code-field" class="hidden">
+                        <label class="block text-sm font-medium text-red-600 dark:text-red-400 mb-1">كود العامل (من المالك)</label>
+                        <input type="password" id="reg-admin-code" placeholder="أدخل الكود الذي أعطاه لك المالك" class="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-red-900/50 dark:text-white">
+                        <p class="text-xs text-gray-400 mt-1 italic">سيتم تحديد صلاحيتك تلقائياً بناءً على هذا الكود</p>
+                    </div>
+
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-md">
+                        تسجيل الحساب
+                    </button>
+                </form>
+                <div class="mt-6 text-center text-sm">
+                    <p class="text-gray-500">لديك حساب بالفعل؟ <button onclick="app.navTo('login')" class="text-blue-600 hover:underline font-bold">تسجيل الدخول</button></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: DASHBOARD (Admin/Assistant) -->
+        <section id="view-dashboard" class="fade-in hidden">
+            <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-gauge-high text-purple-600"></i> لوحة التحكم
+                    </h2>
+                    <p class="text-gray-500 mt-1">إدارة المنتجات، المخزون، والمبيعات</p>
+                </div>
+                <div class="flex gap-2 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto">
+                    <button onclick="app.switchDashTab('products')" id="tab-btn-products" class="px-4 py-2 rounded-md text-sm font-medium transition bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 whitespace-nowrap">المنتجات</button>
+                    <button onclick="app.switchDashTab('add')" id="tab-btn-add" class="px-4 py-2 rounded-md text-sm font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">إضافة منتج</button>
+                    <button onclick="app.switchDashTab('sales')" id="tab-btn-sales" class="px-4 py-2 rounded-md text-sm font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">المبيعات</button>
+                    <button onclick="app.switchDashTab('reports')" id="tab-btn-reports" class="px-4 py-2 rounded-md text-sm font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">الإبلاغات</button>
+                    <button onclick="app.switchDashTab('notifications')" id="tab-btn-notifications" class="hidden px-4 py-2 rounded-md text-sm font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap relative">
+                        الإشعارات
+                        <span id="notif-badge" class="hidden absolute -top-1 -left-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"></span>
+                    </button>
+                    <button onclick="app.switchDashTab('my-rating')" id="tab-btn-my-rating" class="hidden px-4 py-2 rounded-md text-sm font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">تقييماتي</button>
+                    <button onclick="app.switchDashTab('change-password')" id="tab-btn-change-password" class="px-4 py-2 rounded-md text-sm font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">تغيير كلمة المرور</button>
+                    <button onclick="app.switchDashTab('settings')" id="tab-btn-settings" class="px-4 py-2 rounded-md text-sm font-medium transition hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">الإعدادات</button>
+                </div>
+            </div>
+
+            <!-- Dashboard: Products List -->
+            <div id="dash-tab-products" class="dash-tab-content block">
+                <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-right">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 uppercase">
+                                <tr>
+                                    <th class="px-6 py-4 font-bold">صورة</th>
+                                    <th class="px-6 py-4 font-bold">اسم المنتج</th>
+                                    <th class="px-6 py-4 font-bold">القسم</th>
+                                    <th class="px-6 py-4 font-bold">الكمية</th>
+                                    <th class="px-6 py-4 font-bold">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-products-table" class="divide-y divide-gray-200 dark:divide-gray-700 text-gray-800 dark:text-gray-200">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard: Add Product -->
+            <div id="dash-tab-add" class="dash-tab-content hidden max-w-2xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 dark:text-white">إضافة منتج جديد</h3>
+                    <form onsubmit="app.handleAddProduct(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300">اسم المنتج</label>
+                            <input type="text" id="prod-name" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 dark:text-gray-300">القسم</label>
+                                <select id="prod-cat" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 dark:text-gray-300">الكمية</label>
+                                <input type="number" id="prod-qty" min="0" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300">الوصف</label>
+                            <textarea id="prod-desc" rows="3" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300">الصور (يمكن اختيار أكثر من صورة)</label>
+                            <input type="file" id="prod-imgs" multiple accept="image/*" class="w-full text-sm text-gray-500 file:ml-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-gray-700 dark:file:text-gray-300">
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-md transition">
+                            نشر المنتج
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dashboard: Reports -->
+            <div id="dash-tab-reports" class="dash-tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 dark:text-gray-200">صندوق الوارد (الإبلاغات والشكاوى)</h3>
+                        <span id="dash-reports-count" class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">0</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-right">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <th class="px-6 py-3">الاسم</th>
+                                    <th class="px-6 py-3">النوع</th>
+                                    <th class="px-6 py-3">التفاصيل</th>
+                                    <th class="px-6 py-3">التاريخ</th>
+                                    <th class="px-6 py-3">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-reports-table" class="divide-y divide-gray-200 dark:divide-gray-700 text-gray-600 dark:text-gray-300">
+                                <!-- Populated JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard: Sales -->
+            <div id="dash-tab-sales" class="dash-tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Record Sale Form -->
+                     <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-bold mb-4 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-cash-register text-green-500"></i> تسجيل عملية بيع
+                        </h3>
+                        <p class="text-sm text-gray-500 mb-4">عند بيع منتج، اختره هنا لخصم الكمية تلقائياً.</p>
+                        <form onsubmit="app.handleSale(event)" class="space-y-4">
+                             <div>
+                                <label class="block text-sm font-medium mb-1 dark:text-gray-300">اختر المنتج المباع</label>
+                                <select id="sale-product-select" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="">-- اختر منتج --</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg shadow-md transition">
+                                تأكيد البيع
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md rounded-xl p-6 flex flex-col justify-center items-center text-center">
+                        <div class="text-6xl mb-2"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="text-4xl font-bold mb-1" id="total-sales-count">0</div>
+                        <div class="text-blue-100">إجمالي عمليات البيع</div>
+                    </div>
+                </div>
+
+                <!-- Sales History -->
+                <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="font-bold text-gray-800 dark:text-gray-200">سجل المبيعات</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-right">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <th class="px-6 py-3">المنتج</th>
+                                    <th class="px-6 py-3">المسؤول</th>
+                                    <th class="px-6 py-3">التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sales-history-table" class="divide-y divide-gray-200 dark:divide-gray-700 text-gray-600 dark:text-gray-300">
+                                <!-- Populated JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             <!-- Dashboard: Settings (Owner Only for some parts) -->
+             <div id="dash-tab-settings" class="dash-tab-content hidden max-w-2xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 dark:text-white" data-translate="settings_title">إعدادات قسم "عن الموقع"</h3>
+                    <form onsubmit="app.updateAboutSection(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="settings_ceo_image">صورة المهندس أحمد عقل</label>
+                            <input type="file" id="setting-ceo-img" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-gray-700 dark:file:text-gray-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="settings_about_image">صورة القسم الخلفية</label>
+                            <input type="file" id="setting-about-img" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="settings_how_to">نص "طريقة الاستخدام"</label>
+                            <textarea id="setting-how-to" rows="4" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition" data-translate="settings_save">
+                            حفظ التعديلات
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dashboard: Notifications (Owner Only) -->
+            <div id="dash-tab-notifications" class="dash-tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 dark:text-gray-200">سجل تسجيلات الدخول</h3>
+                        <button onclick="app.clearNotifications()" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded text-sm">
+                            <i class="fa-solid fa-trash-can ml-1"></i> مسح الكل
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-right">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <th class="px-6 py-3">المستخدم</th>
+                                    <th class="px-6 py-3">الدور</th>
+                                    <th class="px-6 py-3">وقت الدخول</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notifications-table" class="divide-y divide-gray-200 dark:divide-gray-700 text-gray-600 dark:text-gray-300">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard: Change Password -->
+            <div id="dash-tab-change-password" class="dash-tab-content hidden max-w-2xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 dark:text-white">تغيير كلمة المرور</h3>
+                    <form onsubmit="app.handleChangePassword(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300">كلمة المرور الحالية</label>
+                            <input type="password" id="current-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300">كلمة المرور الجديدة</label>
+                            <input type="password" id="new-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300">تأكيد كلمة المرور</label>
+                            <input type="password" id="confirm-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg shadow-md transition">
+                            طلب التغيير
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+
+
+            <!-- Dashboard: My Rating (Employee/Assistant Only) -->
+            <div id="dash-tab-my-rating" class="dash-tab-content hidden max-w-2xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 shadow-md rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-yellow-500"></i> تقييماتي
+                    </h3>
+                    <div id="my-ratings-container" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: ABOUT -->
+        <section id="view-about" class="fade-in hidden">
+             <div class="max-w-4xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="md:flex">
+                        <div class="md:w-1/2">
+                            <img id="about-display-img" src="https://placehold.co/600x400/1e293b/ffffff?text=PopTop" alt="About PopTop" class="h-full w-full object-cover">
+                        </div>
+                        <div class="p-8 md:w-1/2 flex flex-col justify-center">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4" data-translate="about_title">عن الموقع</h2>
+                            
+                            <!-- CEO Image -->
+                            <div class="mb-6 flex justify-center">
+                                <img id="ceo-display-img" src="https://ui-avatars.com/api/?name=Ahmed+Akl&background=3b82f6&color=fff&size=150&bold=true" alt="المهندس أحمد عقل" class="w-32 h-32 rounded-full border-4 border-blue-500 shadow-lg object-cover">
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2" data-translate="about_owners">المالكون</h3>
+                                <ul class="space-y-2 text-gray-700 dark:text-gray-300">
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-user-tie"></i> <span data-translate="about_ceo">المهندس / أحمد عقل</span></li>
+                                    <li class="flex items-center gap-2"><i class="fa-solid fa-user"></i> <span data-translate="about_co_owner">محمود عقل</span></li>
+                                    <li class="mt-2 text-sm opacity-75" data-translate="about_ceo_title">CEO of PopTop Computer</li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-6">
+                                <h3 class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2" data-translate="about_how_to_title">طريقة الاستخدام</h3>
+                                <p id="about-display-howto" class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                                    جاري التحميل...
+                                </p>
+                            </div>
+
+                            <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <p class="text-sm text-center text-gray-500" data-translate="about_footer">PopTop لخدمات الكمبيوتر واللابتوب</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </section>
+
+        <!-- VIEW: REVIEWS -->
+        <section id="view-reviews" class="fade-in hidden">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2" data-translate="reviews_title">آراء العملاء</h2>
+                    <p class="text-gray-500 dark:text-gray-400" data-translate="reviews_subtitle">شارك تجربتك مع PopTop</p>
+                </div>
+
+                <!-- Add Review Form -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 dark:text-white" data-translate="add_review">إضافة تقييم</h3>
+                    <form onsubmit="app.handleAddReview(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="your_name">اسمك</label>
+                            <input type="text" id="review-name" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="rating">التقييم</label>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="app.setRating(1)" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+                                <button type="button" onclick="app.setRating(2)" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+                                <button type="button" onclick="app.setRating(3)" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+                                <button type="button" onclick="app.setRating(4)" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+                                <button type="button" onclick="app.setRating(5)" class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+                            </div>
+                            <input type="hidden" id="review-rating" value="5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="your_comment">تعليقك</label>
+                            <textarea id="review-comment" rows="4" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition">
+                            <i class="fa-solid fa-paper-plane ml-1"></i> <span data-translate="submit_review">إرسال التقييم</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Reviews List -->
+                <div id="reviews-list" class="space-y-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: REPORTS -->
+        <section id="view-reports" class="fade-in hidden">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2" data-translate="reports_title">الإبلاغات والشكاوى</h2>
+                    <p class="text-gray-500 dark:text-gray-400" data-translate="reports_subtitle">نحن نهتم بآرائكم</p>
+                </div>
+
+                <!-- Add Report Form -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 dark:text-white" data-translate="submit_report">تقديم بلاغ</h3>
+                    <form onsubmit="app.handleAddReport(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="your_name">اسمك</label>
+                            <input type="text" id="report-name" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="report_type">نوع البلاغ</label>
+                            <select id="report-type" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="complaint" data-translate="complaint">شكوى</option>
+                                <option value="suggestion" data-translate="suggestion">اقتراح</option>
+                                <option value="technical" data-translate="technical">مشكلة تقنية</option>
+                                <option value="other" data-translate="other">أخرى</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 dark:text-gray-300" data-translate="report_details">التفاصيل</label>
+                            <textarea id="report-details" rows="5" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg shadow-md transition">
+                            <i class="fa-solid fa-flag ml-1"></i> <span data-translate="submit_report_btn">إرسال البلاغ</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Reports List (Admin Only) -->
+                <div id="reports-admin-section" class="hidden">
+                    <h3 class="text-2xl font-bold mb-4 dark:text-white" data-translate="all_reports">جميع الإبلاغات</h3>
+                    <div id="reports-list" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="md:flex md:items-center md:justify-between">
+                <div class="flex justify-center md:justify-start gap-6 items-center">
+                    <a href="https://web.facebook.com/share/g/17kbJL6zDd/" target="_blank" class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition" title="Facebook">
+                        <i class="fa-brands fa-facebook text-2xl"></i>
+                    </a>
+                    <a href="https://wa.me/201116723666" target="_blank" class="text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition" title="WhatsApp">
+                        <i class="fa-brands fa-whatsapp text-2xl"></i>
+                    </a>
+                    <a href="mailto:popmixxx@gmail.com" class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition" title="Email">
+                        <i class="fa-solid fa-envelope text-2xl"></i>
+                    </a>
+                </div>
+                <div class="mt-4 md:mt-0 text-center md:text-right">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">&copy; 2023 PopTop. جميع الحقوق محفوظة.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Image Gallery Modal with Navigation -->
+    <div id="image-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-black/95 image-preview-overlay transition-opacity" onclick="app.closeImageModal()"></div>
+        <div class="relative z-10 flex h-full w-full items-center justify-center p-4">
+            <!-- Close Button -->
+            <button onclick="app.closeImageModal()" class="absolute top-4 right-4 text-white hover:text-gray-300 z-20 bg-gray-800/50 rounded-full p-3 transition">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            
+            <!-- Previous Button -->
+            <button id="modal-prev-btn" onclick="app.modalPrevImage(event)" class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-20 bg-gray-800/50 rounded-full p-3 transition hidden">
+                <i class="fa-solid fa-chevron-left text-2xl"></i>
+            </button>
+            
+            <!-- Next Button -->
+            <button id="modal-next-btn" onclick="app.modalNextImage(event)" class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-20 bg-gray-800/50 rounded-full p-3 transition hidden">
+                <i class="fa-solid fa-chevron-right text-2xl"></i>
+            </button>
+            
+            <!-- Image -->
+            <img id="modal-img" src="" alt="Preview" class="max-h-full max-w-full rounded-lg shadow-2xl object-contain">
+            
+            <!-- Image Counter -->
+            <div id="modal-counter" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm hidden">
+                <span id="modal-current">1</span> / <span id="modal-total">1</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Quantity Modal -->
+    <div id="edit-qty-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('edit-qty-modal').classList.add('hidden')"></div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 w-full max-w-sm relative z-10">
+            <h3 class="text-lg font-bold mb-4 dark:text-white">تعديل الكمية</h3>
+            <input type="hidden" id="edit-qty-id">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1 dark:text-gray-300">الكمية الجديدة</label>
+                <input type="number" id="edit-qty-val" min="0" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="document.getElementById('edit-qty-modal').classList.add('hidden')" class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">إلغاء</button>
+                <button onclick="app.saveQuantity()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to top -->
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-6 left-6 p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition z-40 opacity-75 hover:opacity-100">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // --- Constants & Config ---
+        const CATEGORIES = [
+            "Cables", "Screens", "Cases", "Mouse", "Keyboards", "Phone Chargers", 
+            "Laptop Chargers", "Laptop Bags", "Cameras", "Headphones", 
+            "Mouse Pads", "Speakers", "Controllers", "Others"
+        ];
+        
+        const ADMIN_CODES = {
+            OWNER_AHMED: "151182",
+            OWNER_MAHMOUD: "787899#"
+        };
+
+        const WHATSAPP_NUMBER = "201116723666";
+
+        // --- Translation Dictionary ---
+        const TRANSLATIONS = {
+            ar: {
+                site_title: "PopTop",
+                site_subtitle: "لجميع اللابتوب والكومبيوتر",
+                nav_home: "الرئيسية",
+                nav_about: "عن الموقع",
+                nav_login: "دخول",
+                nav_register: "تسجيل",
+                nav_dashboard: "لوحة التحكم",
+                nav_reviews: "التقييمات",
+                nav_reports: "الإبلاغات",
+                free_shipping: "شحن مجاني",
+                free_delivery_title: "🎉 مبروك! الشحن مجاني الآن",
+                free_delivery_desc: "استمتع بشحن مجاني لجميع الطلبات لمدة 24 ساعة",
+                time_remaining: "الوقت المتبقي:",
+                admin_question: "هل أنت مسؤول (Admin)؟",
+                admin_code_label: "كود المسؤول (مطلوب)",
+                admin_code_hint: "أدخل الكود السري",
+                settings_title: "إعدادات قسم عن الموقع",
+                settings_ceo_image: "صورة المهندس أحمد عقل",
+                settings_about_image: "صورة القسم الخلفية",
+                settings_how_to: "نص طريقة الاستخدام",
+                settings_save: "حفظ التعديلات",
+                about_title: "عن الموقع",
+                about_owners: "المالكون",
+                about_ceo: "المهندس / أحمد عقل",
+                about_co_owner: "محمود عقل",
+                about_ceo_title: "CEO of PopTop Computer",
+                about_how_to_title: "طريقة الاستخدام",
+                about_footer: "PopTop لخدمات الكمبيوتر واللابتوب",
+                reviews_title: "آراء العملاء",
+                reviews_subtitle: "شارك تجربتك مع PopTop",
+                add_review: "إضافة تقييم",
+                your_name: "اسمك",
+                rating: "التقييم",
+                your_comment: "تعليقك",
+                submit_review: "إرسال التقييم",
+                reports_title: "الإبلاغات والشكاوى",
+                reports_subtitle: "نحن نهتم بآرائكم",
+                submit_report: "تقديم بلاغ",
+                report_type: "نوع البلاغ",
+                report_details: "التفاصيل",
+                submit_report_btn: "إرسال البلاغ",
+                complaint: "شكوى",
+                suggestion: "اقتراح",
+                technical: "مشكلة تقنية",
+                other: "أخرى",
+                all_reports: "جميع الإبلاغات"
+            },
+            en: {
+                site_title: "PopTop",
+                site_subtitle: "For All Laptops & Computers",
+                nav_home: "Home",
+                nav_about: "About",
+                nav_login: "Login",
+                nav_register: "Register",
+                nav_dashboard: "Dashboard",
+                nav_reviews: "Reviews",
+                nav_reports: "Reports",
+                free_shipping: "Free Shipping",
+                free_delivery_title: "🎉 Congrats! Free Shipping Now",
+                free_delivery_desc: "Enjoy free shipping on all orders for 24 hours",
+                time_remaining: "Time Remaining:",
+                admin_question: "Are you an Admin?",
+                admin_code_label: "Admin Code (Required)",
+                admin_code_hint: "Enter secret code",
+                settings_title: "About Section Settings",
+                settings_ceo_image: "Engineer Ahmed Akl Image",
+                settings_about_image: "Background Section Image",
+                settings_how_to: "How to Use Text",
+                settings_save: "Save Changes",
+                about_title: "About Us",
+                about_owners: "Owners",
+                about_ceo: "Engineer / Ahmed Akl",
+                about_co_owner: "Mahmoud Akl",
+                about_ceo_title: "CEO of PopTop Computer",
+                about_how_to_title: "How to Use",
+                about_footer: "PopTop for Computer & Laptop Services",
+                reviews_title: "Customer Reviews",
+                reviews_subtitle: "Share your experience with PopTop",
+                add_review: "Add Review",
+                your_name: "Your Name",
+                rating: "Rating",
+                your_comment: "Your Comment",
+                submit_review: "Submit Review",
+                reports_title: "Reports & Complaints",
+                reports_subtitle: "We care about your feedback",
+                submit_report: "Submit Report",
+                report_type: "Report Type",
+                report_details: "Details",
+                submit_report_btn: "Submit Report",
+                complaint: "Complaint",
+                suggestion: "Suggestion",
+                technical: "Technical Issue",
+                other: "Other",
+                all_reports: "All Reports"
+            }
+        };
+
+        // --- State Management ---
+        const app = {
+            data: {
+                products: [],
+                users: [],
+                sales: [],
+                reviews: [],
+                reports: [],
+                passwordRequests: [],
+                employeeRatings: [],
+                invites: [], // Store generated access codes
+                loginNotifications: [], // Track all logins for owner
+                settings: {
+                    aboutImg: null,
+                    ceoImg: null,
+                    howToUse: "تصفح المنتجات من الصفحة الرئيسية، اختر ما يناسبك، وتواصل معنا عبر الواتساب لإتمام عملية الشراء."
+                },
+                currentUser: null,
+                currentLang: 'ar',
+                currentModalImages: [],
+                currentModalIndex: 0,
+                selectedRating: 5
+            },
+
+            init() {
+                this.loadData();
+                this.applyTheme();
+                this.setupNavigation();
+                this.renderCategories();
+                this.renderProducts();
+                this.checkDeliveryStatus();
+                this.applyTranslations();
+                
+                // Force Login Check
+                if (!this.data.currentUser) {
+                    this.navTo('login');
+                    this.showToast('يجب تسجيل الدخول أولاً', 'info');
+                } else {
+                    // Initial View
+                    this.navTo('home');
+                }
+            },
+
+            loadData() {
+                const stored = localStorage.getItem('poptop_db');
+                if (stored) {
+                    this.data = JSON.parse(stored);
+                }
+                // Check session
+                const session = sessionStorage.getItem('poptop_session');
+                if (session) {
+                    this.data.currentUser = JSON.parse(session);
+                    this.updateAuthUI();
+                }
+            },
+
+            saveData() {
+                localStorage.setItem('poptop_db', JSON.stringify(this.data));
+            },
+
+            // --- Language ---
+            toggleLanguage() {
+                this.data.currentLang = this.data.currentLang === 'ar' ? 'en' : 'ar';
+                this.saveData();
+                this.applyTranslations();
+                this.updateLanguageDirection();
+            },
+
+            applyTranslations() {
+                const lang = this.data.currentLang || 'ar';
+                document.querySelectorAll('[data-translate]').forEach(el => {
+                    const key = el.getAttribute('data-translate');
+                    if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
+                        el.textContent = TRANSLATIONS[lang][key];
+                    }
+                });
+                
+                // Update toggle button
+                const toggleText = lang === 'ar' ? 'EN' : 'عربي';
+                document.getElementById('lang-toggle-text').textContent = toggleText;
+                const mobileToggle = document.getElementById('lang-toggle-text-mobile');
+                if (mobileToggle) mobileToggle.textContent = toggleText;
+            },
+
+            updateLanguageDirection() {
+                const lang = this.data.currentLang || 'ar';
+                const html = document.documentElement;
+                if (lang === 'ar') {
+                    html.setAttribute('dir', 'rtl');
+                    html.setAttribute('lang', 'ar');
+                } else {
+                    html.setAttribute('dir', 'ltr');
+                    html.setAttribute('lang', 'en');
+                }
+            },
+
+            // --- Theme ---
+            applyTheme() {
+                const theme = localStorage.getItem('theme');
+                if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            },
+
+            // --- Navigation ---
+            navTo(viewId) {
+                // Force Login - Block all pages except login/register
+                if (!this.data.currentUser && viewId !== 'login' && viewId !== 'register') {
+                    this.showToast('يجب تسجيل الدخول أولاً', 'error');
+                    // Hide all views and show login
+                    document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
+                    const loginView = document.getElementById('view-login');
+                    if (loginView) {
+                        loginView.classList.remove('hidden');
+                        window.scrollTo({top: 0, behavior: 'smooth'});
+                    }
+                    return;
+                }
+                
+                // Permissions check
+                if (viewId === 'dashboard' && (!this.data.currentUser || !this.data.currentUser.isAdmin)) {
+                    this.showToast('غير مصرح لك بالدخول هنا', 'error');
+                    return;
+                }
+                
+                // Special checks for Login/Register pages when already logged in
+                if ((viewId === 'login' || viewId === 'register') && this.data.currentUser) {
+                    this.navTo('home'); // Redirect to home if already logged in
+                    return;
+                }
+
+                // Hide all views
+                document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
+                
+                // Show target view
+                const target = document.getElementById(`view-${viewId}`);
+                if (target) {
+                    target.classList.remove('hidden');
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                }
+
+                // Refresh specific views
+                if (viewId === 'dashboard') {
+                    this.updateDashboardTabs(); // Update visible tabs
+                    this.switchDashTab('products'); // Default tab
+                }
+                if (viewId === 'about') {
+                    this.renderAbout();
+                }
+            },
+
+            // --- Authentication ---
+            handleRegister(e) {
+                e.preventDefault();
+                const username = document.getElementById('reg-username').value.trim();
+                const password = document.getElementById('reg-password').value.trim();
+                const isWorker = document.getElementById('reg-is-admin').checked;
+                const adminCode = document.getElementById('reg-admin-code').value.trim();
+
+                if (this.data.users.find(u => u.username === username)) {
+                    this.showToast('اسم المستخدم مسجل بالفعل', 'error');
+                    return;
+                }
+
+                let role = 'user';
+                let inviteUsed = null;
+
+                if (isWorker) {
+                    // Check if it's an Owner Code
+                    if (adminCode === ADMIN_CODES.OWNER_AHMED || adminCode === ADMIN_CODES.OWNER_MAHMOUD) {
+                        role = 'owner';
+                    } 
+                    // Check if it's a generated Invite Code
+                    else {
+                        const invite = this.data.invites.find(i => i.code === adminCode);
+                        if (invite) {
+                            role = invite.role;
+                            inviteUsed = invite.id;
+                        } else {
+                            this.showToast('كود العامل غير صحيح', 'error');
+                            return;
+                        }
+                    }
+                }
+
+                const newUser = { 
+                    id: Date.now(), 
+                    username, 
+                    password, 
+                    role, 
+                    isAdmin: role !== 'user',
+                    // Default photo based on name
+                    photo: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(username) + '&background=3b82f6&color=fff&size=128',
+                    fullname: username, // Default fullname
+                    lastSeen: null,
+                    workerCode: role !== 'user' ? adminCode : null // Save the code for login verification
+                };
+                
+                // Remove used invite
+                if (inviteUsed) {
+                    this.data.invites = this.data.invites.filter(i => i.id !== inviteUsed);
+                }
+
+                this.data.users.push(newUser);
+                this.saveData();
+                this.showToast('تم إنشاء الحساب بنجاح', 'success');
+                this.navTo('login');
+            },
+
+            handleLogin(e) {
+                e.preventDefault();
+                const username = document.getElementById('login-username').value.trim();
+                const password = document.getElementById('login-password').value.trim();
+
+                const user = this.data.users.find(u => u.username === username && u.password === password);
+
+                if (user) {
+                    // Create session with Login Time for Free Delivery
+                    const sessionUser = { ...user, loginTime: Date.now() };
+                    this.data.currentUser = sessionUser;
+                    localStorage.setItem('poptop_session', JSON.stringify(sessionUser));
+                    
+                    // Update last seen for employees
+                    if (user.isAdmin) {
+                        const dbUser = this.data.users.find(u => u.id === user.id);
+                        if (dbUser) {
+                            dbUser.lastSeen = Date.now();
+                            this.saveData();
+                        }
+                        // Set interval to update activity every minute
+                        setInterval(() => this.updateUserActivity(), 60000);
+                    }
+                    
+                    // Log Login Notification for Owners
+                    this.data.loginNotifications.push({
+                        id: Date.now(),
+                        username: user.username,
+                        fullname: user.fullname || user.username,
+                        role: user.role || 'user',
+                        timestamp: Date.now()
+                    });
+                    this.saveData();
+                    
+                    this.updateAuthUI();
+                    
+                    // Notification Logic
+                    if (user.isAdmin) {
+                        this.showToast(`مرحباً ${user.role === 'owner' ? 'المالك' : 'المساعد'} ${user.username}`, 'info');
+                    } else {
+                        this.showToast('تم تسجيل الدخول بنجاح', 'success');
+                    }
+
+                    // Admin Alert simulation (Only admin knows when admins login - implied logic)
+                    // If this was a real backend, we'd emit a socket event here.
+
+                    this.checkDeliveryStatus();
+                    this.navTo(user.isAdmin ? 'dashboard' : 'home');
+                } else {
+                    this.showToast('بيانات الدخول غير صحيحة', 'error');
+                }
+            },
+
+            logout() {
+                this.data.currentUser = null;
+                sessionStorage.removeItem('poptop_session');
+                this.updateAuthUI();
+                this.navTo('login');
+                this.showToast('تم تسجيل الخروج', 'info');
+            },
+
+            updateAuthUI() {
+                const user = this.data.currentUser;
+                const authBtns = document.getElementById('nav-auth-buttons');
+                const userMenu = document.getElementById('nav-user-menu');
+                const mobileAuth = document.getElementById('mobile-auth-buttons');
+                const mobileUser = document.getElementById('mobile-user-menu');
+                const dashBtn = document.getElementById('dashboard-btn');
+                const mobDashBtn = document.getElementById('mobile-dashboard-btn');
+
+                if (user) {
+                    authBtns.classList.add('hidden');
+                    mobileAuth.classList.add('hidden');
+                    userMenu.classList.remove('hidden');
+                    mobileUser.classList.remove('hidden');
+                    
+                    if (user.isAdmin) {
+                        dashBtn.classList.remove('hidden');
+                        mobDashBtn.classList.remove('hidden');
+                    } else {
+                        dashBtn.classList.add('hidden');
+                        mobDashBtn.classList.add('hidden');
+                    }
+                } else {
+                    authBtns.classList.remove('hidden');
+                    mobileAuth.classList.remove('hidden');
+                    userMenu.classList.add('hidden');
+                    mobileUser.classList.add('hidden');
+                }
+            },
+
+            checkDeliveryStatus() {
+                if (!this.data.currentUser) return;
+                
+                const now = Date.now();
+                const loginTime = this.data.currentUser.loginTime;
+                const hoursPassed = (now - loginTime) / (1000 * 60 * 60);
+
+                if (hoursPassed < 24) {
+                    document.getElementById('free-delivery-banner').classList.remove('hidden');
+                    document.getElementById('delivery-timer-badge').classList.remove('hidden');
+                    document.getElementById('mobile-delivery-status').classList.remove('hidden');
+                    this.startDeliveryCountdown();
+                } else {
+                    document.getElementById('free-delivery-banner').classList.add('hidden');
+                    document.getElementById('delivery-timer-badge').classList.add('hidden');
+                    document.getElementById('mobile-delivery-status').classList.add('hidden');
+                }
+            },
+
+            startDeliveryCountdown() {
+                const updateTimer = () => {
+                    if (!this.data.currentUser) return;
+                    
+                    const now = Date.now();
+                    const loginTime = this.data.currentUser.loginTime;
+                    const elapsed = now - loginTime;
+                    const remaining = (24 * 60 * 60 * 1000) - elapsed;
+
+                    if (remaining <= 0) {
+                        document.getElementById('delivery-countdown').textContent = "00:00:00";
+                        document.getElementById('free-delivery-banner').classList.add('hidden');
+                        return;
+                    }
+
+                    const hours = Math.floor(remaining / (1000 * 60 * 60));
+                    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+                    const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    const elem = document.getElementById('delivery-countdown');
+                    if (elem) elem.textContent = display;
+                };
+
+                updateTimer();
+                setInterval(updateTimer, 1000);
+            },
+
+            // --- Dashboard Functions ---
+            switchDashTab(tabName) {
+                // UI Toggle
+                document.querySelectorAll('.dash-tab-content').forEach(el => el.classList.add('hidden'));
+                document.getElementById(`dash-tab-${tabName}`).classList.remove('hidden');
+                
+                // Active Button Style
+                document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => {
+                    btn.classList.remove('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900/30', 'dark:text-purple-300');
+                    btn.classList.add('hover:bg-gray-100', 'dark:hover:bg-gray-700');
+                });
+                const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+                if (activeBtn) {
+                    activeBtn.classList.add('bg-purple-100', 'text-purple-700', 'dark:bg-purple-900/30', 'dark:text-purple-300');
+                    activeBtn.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-700');
+                }
+
+                // Logic Refresh
+                if (tabName === 'products') this.renderDashProducts();
+                if (tabName === 'add') this.populateCatDropdown('prod-cat');
+                if (tabName === 'sales') this.renderSalesStats();
+                if (tabName === 'reports') this.renderDashReports();
+                if (tabName === 'notifications') this.renderNotifications();
+                if (tabName === 'settings') this.loadSettingsForm();
+                if (tabName === 'employees') { this.renderEmployees(); this.renderInvites(); }
+                if (tabName === 'password-requests') this.renderPasswordRequests();
+                if (tabName === 'my-rating') this.renderMyRatings();
+            },
+
+            // --- Invites Management ---
+            handleCreateInvite(e) {
+                e.preventDefault();
+                const role = document.getElementById('invite-role').value;
+                const code = document.getElementById('invite-code').value.trim();
+
+                if (!code) return;
+
+                // Check duplicates
+                if (this.data.invites.find(i => i.code === code)) {
+                    this.showToast('هذا الكود موجود بالفعل', 'error');
+                    return;
+                }
+
+                this.data.invites.push({
+                    id: Date.now(),
+                    code,
+                    role,
+                    createdBy: this.data.currentUser.username
+                });
+
+                this.saveData();
+                this.showToast('تم إنشاء الكود بنجاح', 'success');
+                document.getElementById('invite-code').value = '';
+                this.renderInvites();
+            },
+
+            renderInvites() {
+                const list = document.getElementById('active-invites-list');
+                if (!list) return; // Guard clause
+                
+                list.innerHTML = '';
+                
+                if (this.data.invites.length === 0) {
+                    list.innerHTML = '<li class="text-gray-400 italic">لا توجد أكواد نشطة</li>';
+                    return;
+                }
+
+                this.data.invites.forEach(inv => {
+                    const li = document.createElement('li');
+                    li.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-2 rounded border border-gray-200 dark:border-gray-600";
+                    
+                    const roleText = inv.role === 'assistant' ? 'أدمن' : 'عامل عادي';
+                    
+                    li.innerHTML = `
+                        <div>
+                            <span class="font-mono font-bold text-blue-600 dark:text-blue-400 text-lg mx-2">${inv.code}</span>
+                            <span class="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">${roleText}</span>
+                        </div>
+                        <button onclick="app.deleteInvite(${inv.id})" class="text-red-500 hover:bg-red-100 p-1 rounded transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    `;
+                    list.appendChild(li);
+                });
+            },
+
+            deleteInvite(id) {
+                this.data.invites = this.data.invites.filter(i => i.id !== id);
+                this.saveData();
+                this.renderInvites();
+            },
+
+            updateDashboardTabs() {
+                const user = this.data.currentUser;
+                if (!user) return;
+
+                // Show/Hide tabs based on role
+                const myRatingBtn = document.getElementById('tab-btn-my-rating');
+                const notificationsBtn = document.getElementById('tab-btn-notifications');
+
+                if (user.role === 'owner') {
+                    myRatingBtn.classList.add('hidden');
+                    notificationsBtn.classList.remove('hidden');
+                    this.updateNotificationBadge();
+                } else if (user.role === 'assistant' || user.role === 'employee') {
+                    myRatingBtn.classList.remove('hidden');
+                    notificationsBtn.classList.add('hidden');
+                } else {
+                    myRatingBtn.classList.add('hidden');
+                    notificationsBtn.classList.add('hidden');
+                }
+            },
+
+            updateNotificationBadge() {
+                const badge = document.getElementById('notif-badge');
+                const count = this.data.loginNotifications.length;
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            },
+
+            renderNotifications() {
+                const tbody = document.getElementById('notifications-table');
+                tbody.innerHTML = '';
+
+                if (this.data.loginNotifications.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">لا توجد إشعارات</td></tr>';
+                    return;
+                }
+
+                const roleNames = {
+                    owner: 'مالك',
+                    assistant: 'أدمن',
+                    employee: 'عامل',
+                    user: 'مستخدم'
+                };
+
+                [...this.data.loginNotifications].reverse().forEach(notif => {
+                    const tr = document.createElement('tr');
+                    const date = new Date(notif.timestamp).toLocaleString('ar-EG');
+                    
+                    const roleClass = {
+                        owner: 'bg-red-100 text-red-800 dark:bg-red-900/30',
+                        assistant: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30',
+                        employee: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30',
+                        user: 'bg-gray-100 text-gray-800 dark:bg-gray-700'
+                    };
+                    
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 font-medium">${notif.fullname}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${roleClass[notif.role] || roleClass.user}">
+                                ${roleNames[notif.role] || 'مستخدم'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-xs">${date}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            clearNotifications() {
+                if (confirm('هل تريد مسح جميع الإشعارات؟')) {
+                    this.data.loginNotifications = [];
+                    this.saveData();
+                    this.renderNotifications();
+                    this.updateNotificationBadge();
+                    this.showToast('تم مسح الإشعارات', 'info');
+                }
+            },
+
+            // Add Product
+            async handleAddProduct(e) {
+                e.preventDefault();
+                const name = document.getElementById('prod-name').value;
+                const cat = document.getElementById('prod-cat').value;
+                const qty = parseInt(document.getElementById('prod-qty').value);
+                const desc = document.getElementById('prod-desc').value;
+                const imgInput = document.getElementById('prod-imgs');
+                
+                // Process Images
+                const images = [];
+                if (imgInput.files.length > 0) {
+                    for (let file of imgInput.files) {
+                        const base64 = await this.fileToBase64(file);
+                        images.push(base64);
+                    }
+                } else {
+                    // Default Placeholder
+                    images.push('https://placehold.co/400?text=No+Image');
+                }
+
+                const newProd = {
+                    id: Date.now(),
+                    name, category: cat, quantity: qty, description: desc, images
+                };
+
+                this.data.products.push(newProd);
+                this.saveData();
+                this.showToast('تم نشر المنتج بنجاح', 'success');
+                e.target.reset();
+                this.switchDashTab('products');
+            },
+
+            // Helpers
+            fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+            },
+
+            populateCatDropdown(elemId) {
+                const select = document.getElementById(elemId);
+                // Keep the first option if it's the sales filter
+                const defaultOpt = select.querySelector('option[value=""]');
+                select.innerHTML = ''; 
+                if(defaultOpt) select.appendChild(defaultOpt);
+
+                CATEGORIES.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.textContent = cat; // Arabic translation map could go here
+                    select.appendChild(opt);
+                });
+            },
+
+            renderDashProducts() {
+                const tbody = document.getElementById('dash-products-table');
+                tbody.innerHTML = '';
+                
+                this.data.products.forEach(prod => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700/50 transition";
+                    tr.innerHTML = `
+                        <td class="px-6 py-4"><img src="${prod.images[0]}" class="w-12 h-12 rounded object-cover border dark:border-gray-600"></td>
+                        <td class="px-6 py-4 font-medium">${prod.name}</td>
+                        <td class="px-6 py-4 text-gray-500 dark:text-gray-400">${prod.category}</td>
+                        <td class="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">${prod.quantity}</td>
+                        <td class="px-6 py-4">
+                            <button onclick="app.openEditQty(${prod.id})" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 ml-2">تعديل الكمية</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            openEditQty(id) {
+                const prod = this.data.products.find(p => p.id === id);
+                if (prod) {
+                    document.getElementById('edit-qty-id').value = id;
+                    document.getElementById('edit-qty-val').value = prod.quantity;
+                    document.getElementById('edit-qty-modal').classList.remove('hidden');
+                }
+            },
+
+            saveQuantity() {
+                const id = parseInt(document.getElementById('edit-qty-id').value);
+                const newQty = parseInt(document.getElementById('edit-qty-val').value);
+                
+                const prod = this.data.products.find(p => p.id === id);
+                if (prod) {
+                    prod.quantity = newQty;
+                    this.saveData();
+                    this.renderDashProducts(); // Refresh Table
+                    this.renderProducts(); // Refresh Viewer
+                    document.getElementById('edit-qty-modal').classList.add('hidden');
+                    this.showToast('تم تحديث الكمية', 'success');
+                }
+            },
+
+            // Sales Logic
+            renderDashReports() {
+                const tbody = document.getElementById('dash-reports-table');
+                tbody.innerHTML = '';
+                document.getElementById('dash-reports-count').textContent = this.data.reports.length;
+
+                if (this.data.reports.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">لا توجد إبلاغات حالياً</td></tr>';
+                    return;
+                }
+
+                [...this.data.reports].reverse().forEach(report => {
+                    const tr = document.createElement('tr');
+                    const date = new Date(report.date).toLocaleDateString('ar-EG');
+                    const typeColors = {
+                        complaint: 'text-red-600 bg-red-50 dark:bg-red-900/20',
+                        suggestion: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+                        technical: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
+                        other: 'text-gray-600 bg-gray-50 dark:bg-gray-700/50'
+                    };
+                    
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 font-medium">${report.name}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bold ${typeColors[report.type] || ''}">${report.type}</span></td>
+                        <td class="px-6 py-4 max-w-xs truncate" title="${report.details}">${report.details}</td>
+                        <td class="px-6 py-4 text-xs">${date}</td>
+                        <td class="px-6 py-4">
+                            <button onclick="app.deleteReport(${report.id})" class="text-red-500 hover:text-red-700 transition" title="حذف">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            deleteReport(id) {
+                if(confirm('هل أنت متأكد من حذف هذا البلاغ؟')) {
+                    this.data.reports = this.data.reports.filter(r => r.id !== id);
+                    this.saveData();
+                    this.renderDashReports();
+                    this.showToast('تم حذف البلاغ', 'info');
+                }
+            },
+
+            renderSalesStats() {
+                // Populate Dropdown
+                const select = document.getElementById('sale-product-select');
+                select.innerHTML = '<option value="">-- اختر منتج --</option>';
+                this.data.products.forEach(p => {
+                    if (p.quantity > 0) {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.name} (المتاح: ${p.quantity})`;
+                        select.appendChild(opt);
+                    }
+                });
+
+                // Total Sales Count
+                document.getElementById('total-sales-count').textContent = this.data.sales.length;
+
+                // History Table
+                const tbody = document.getElementById('sales-history-table');
+                tbody.innerHTML = '';
+                // Show latest first
+                [...this.data.sales].reverse().forEach(sale => {
+                    const tr = document.createElement('tr');
+                    const date = new Date(sale.date).toLocaleDateString('ar-EG');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4">${sale.productName}</td>
+                        <td class="px-6 py-4">${sale.soldBy}</td>
+                        <td class="px-6 py-4 text-gray-500 text-xs">${date}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            handleSale(e) {
+                e.preventDefault();
+                const prodId = parseInt(document.getElementById('sale-product-select').value);
+                if (!prodId) return;
+
+                const prod = this.data.products.find(p => p.id === prodId);
+                if (prod && prod.quantity > 0) {
+                    prod.quantity--;
+                    
+                    const saleRecord = {
+                        id: Date.now(),
+                        productId: prod.id,
+                        productName: prod.name,
+                        soldBy: this.data.currentUser.username,
+                        date: Date.now()
+                    };
+                    
+                    this.data.sales.push(saleRecord);
+                    this.saveData();
+                    
+                    this.showToast('تم تسجيل عملية البيع بنجاح', 'success');
+                    this.renderSalesStats(); // Refresh sales UI
+                } else {
+                    this.showToast('الكمية نفذت!', 'error');
+                }
+            },
+
+            // Settings Logic
+            loadSettingsForm() {
+                // Owner check not explicitly required by prompt for view, but standard logic
+                // Assistant can view but maybe we restrict? Prompt says "Owner-only settings" for Assistant Admin restriction.
+                // Assuming Settings is restricted to Owner for editing About, or maybe open. Let's assume Owner only for logic safety.
+                
+                if (this.data.currentUser.role !== 'owner') {
+                    // Disable inputs
+                    document.getElementById('setting-how-to').disabled = true;
+                    document.getElementById('setting-about-img').disabled = true;
+                    this.showToast('صلاحيات المالك مطلوبة للتعديل', 'info');
+                } else {
+                    document.getElementById('setting-how-to').disabled = false;
+                    document.getElementById('setting-about-img').disabled = false;
+                }
+
+                document.getElementById('setting-how-to').value = this.data.settings.howToUse;
+            },
+
+            async updateAboutSection(e) {
+                e.preventDefault();
+                if (this.data.currentUser.role !== 'owner') return;
+
+                const txt = document.getElementById('setting-how-to').value;
+                const aboutImgInput = document.getElementById('setting-about-img');
+                const ceoImgInput = document.getElementById('setting-ceo-img');
+                
+                if (aboutImgInput.files.length > 0) {
+                    this.data.settings.aboutImg = await this.fileToBase64(aboutImgInput.files[0]);
+                }
+                
+                if (ceoImgInput.files.length > 0) {
+                    this.data.settings.ceoImg = await this.fileToBase64(ceoImgInput.files[0]);
+                }
+                
+                this.data.settings.howToUse = txt;
+                this.saveData();
+                this.showToast('تم تحديث صفحة "عن الموقع"', 'success');
+            },
+
+            renderAbout() {
+                document.getElementById('about-display-howto').textContent = this.data.settings.howToUse;
+                if (this.data.settings.aboutImg) {
+                    document.getElementById('about-display-img').src = this.data.settings.aboutImg;
+                }
+                if (this.data.settings.ceoImg) {
+                    document.getElementById('ceo-display-img').src = this.data.settings.ceoImg;
+                }
+            },
+
+            // --- Viewer Website Functions ---
+            renderCategories() {
+                const pills = document.getElementById('category-pills');
+                pills.innerHTML = `<button onclick="app.filterCat('all')" class="cat-pill bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium transition hover:bg-blue-700">الكل</button>`;
+                
+                const select = document.getElementById('category-filter');
+                select.innerHTML = '<option value="all">كل الأقسام</option>';
+
+                CATEGORIES.forEach(cat => {
+                    // Pill
+                    const btn = document.createElement('button');
+                    btn.textContent = cat;
+                    btn.className = "cat-pill bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-4 py-1 rounded-full text-sm font-medium transition hover:bg-gray-300 dark:hover:bg-gray-600";
+                    btn.onclick = () => app.filterCat(cat);
+                    pills.appendChild(btn);
+
+                    // Select Option
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.textContent = cat;
+                    select.appendChild(opt);
+                });
+            },
+
+            filterCat(cat) {
+                document.getElementById('category-filter').value = cat;
+                
+                // Update Pill styles
+                document.querySelectorAll('.cat-pill').forEach(btn => {
+                    if (btn.textContent === cat || (cat === 'all' && btn.textContent === 'الكل')) {
+                        btn.className = "cat-pill bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium transition shadow-md";
+                    } else {
+                        btn.className = "cat-pill bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-4 py-1 rounded-full text-sm font-medium transition hover:bg-gray-300 dark:hover:bg-gray-600";
+                    }
+                });
+
+                this.renderProducts();
+            },
+
+            renderProducts() {
+                const grid = document.getElementById('products-grid');
+                grid.innerHTML = '';
+                
+                const filterCat = document.getElementById('category-filter').value;
+                const search = document.getElementById('search-input').value.toLowerCase();
+
+                const filtered = this.data.products.filter(p => {
+                    const matchesCat = filterCat === 'all' || p.category === filterCat;
+                    const matchesSearch = p.name.toLowerCase().includes(search) || p.description.toLowerCase().includes(search);
+                    return matchesCat && matchesSearch;
+                });
+
+                if (filtered.length === 0) {
+                    document.getElementById('empty-state').classList.remove('hidden');
+                } else {
+                    document.getElementById('empty-state').classList.add('hidden');
+                }
+
+                filtered.forEach(prod => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden group hover:shadow-2xl transition duration-300 border border-gray-100 dark:border-gray-700 flex flex-col";
+                    
+                    const mainImg = prod.images[0] || 'https://placehold.co/400';
+                    
+                    card.innerHTML = `
+                        <div class="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-700">
+                            <img src="${mainImg}" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                            <button onclick="app.showImageModal('${mainImg}')" class="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            ${prod.quantity === 0 ? '<div class="absolute inset-0 bg-white/60 dark:bg-black/60 flex items-center justify-center font-bold text-red-600 rotate-12 text-2xl border-4 border-red-600 rounded-lg w-32 h-16 m-auto">نفذت الكمية</div>' : ''}
+                        </div>
+                        <div class="p-5 flex-grow flex flex-col">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">${prod.name}</h3>
+                            </div>
+                            <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded w-fit mb-3">${prod.category}</span>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">${prod.description}</p>
+                            
+                            <div class="mt-auto">
+                                <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('بكام السعر؟ ' + prod.name)}" target="_blank" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition flex items-center justify-center gap-2">
+                                    <i class="fa-brands fa-whatsapp text-xl"></i> تواصل للطلب
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            },
+
+            // --- UI Utilities ---
+            showImageModal(src) {
+                const modal = document.getElementById('image-modal');
+                document.getElementById('modal-img').src = src;
+                modal.classList.remove('hidden');
+            },
+
+            closeImageModal() {
+                document.getElementById('image-modal').classList.add('hidden');
+            },
+
+            showToast(msg, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                
+                let colors = '';
+                if (type === 'success') colors = 'bg-green-600 text-white';
+                if (type === 'error') colors = 'bg-red-600 text-white';
+                if (type === 'info') colors = 'bg-blue-600 text-white';
+
+                toast.className = `${colors} px-6 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-x-full opacity-0 flex items-center gap-2 min-w-[200px]`;
+                toast.innerHTML = `
+                    <i class="fa-solid ${type === 'success' ? 'fa-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-info-circle'}"></i>
+                    <span class="font-medium">${msg}</span>
+                `;
+                
+                container.appendChild(toast);
+                
+                // Animate In
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full', 'opacity-0');
+                }, 100);
+
+                // Remove
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            },
+
+            setupNavigation() {
+                // Mobile menu toggling handling is inline in HTML for simplicity, 
+                // but we close it on navigation
+                const originalNavTo = this.navTo.bind(this);
+                this.navTo = (viewId) => {
+                    originalNavTo(viewId);
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                    
+                    // Special rendering for Reviews and Reports
+                    if (viewId === 'reviews') this.renderReviews();
+                    if (viewId === 'reports') this.renderReports();
+                };
+            },
+
+            // --- Reviews Functions ---
+            setRating(stars) {
+                this.data.selectedRating = stars;
+                document.getElementById('review-rating').value = stars;
+                
+                const starBtns = document.querySelectorAll('.rating-star');
+                starBtns.forEach((btn, idx) => {
+                    if (idx < stars) {
+                        btn.classList.add('text-yellow-400');
+                        btn.classList.remove('text-gray-300');
+                    } else {
+                        btn.classList.remove('text-yellow-400');
+                        btn.classList.add('text-gray-300');
+                    }
+                });
+            },
+
+            handleAddReview(e) {
+                e.preventDefault();
+                const name = document.getElementById('review-name').value.trim();
+                const rating = parseInt(document.getElementById('review-rating').value);
+                const comment = document.getElementById('review-comment').value.trim();
+
+                const newReview = {
+                    id: Date.now(),
+                    name,
+                    rating,
+                    comment,
+                    date: Date.now()
+                };
+
+                this.data.reviews.push(newReview);
+                this.saveData();
+                this.showToast('تم إضافة تقييمك بنجاح', 'success');
+                e.target.reset();
+                this.data.selectedRating = 5;
+                this.renderReviews();
+            },
+
+            renderReviews() {
+                const container = document.getElementById('reviews-list');
+                container.innerHTML = '';
+
+                if (this.data.reviews.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-gray-100 dark:bg-gray-700/50 rounded-xl p-8 text-center">
+                            <i class="fa-solid fa-star text-4xl text-gray-400 mb-3"></i>
+                            <p class="text-gray-500 dark:text-gray-400">لا توجد تقييمات حتى الآن</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                [...this.data.reviews].reverse().forEach(review => {
+                    const date = new Date(review.date).toLocaleDateString('ar-EG');
+                    const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                    
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-200 dark:border-gray-700";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white">${review.name}</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">${date}</p>
+                            </div>
+                            <div class="text-yellow-400 text-xl">${stars}</div>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300">${review.comment}</p>
+                    `;
+                    container.appendChild(card);
+                });
+            },
+
+            // --- Reports Functions ---
+            handleAddReport(e) {
+                e.preventDefault();
+                const name = document.getElementById('report-name').value.trim();
+                const type = document.getElementById('report-type').value;
+                const details = document.getElementById('report-details').value.trim();
+
+                const newReport = {
+                    id: Date.now(),
+                    name,
+                    type,
+                    details,
+                    date: Date.now(),
+                    status: 'pending'
+                };
+
+                this.data.reports.push(newReport);
+                this.saveData();
+                this.showToast('تم إرسال بلاغك بنجاح', 'success');
+                e.target.reset();
+            },
+
+            renderReports() {
+                // Show admin section only for admins
+                const adminSection = document.getElementById('reports-admin-section');
+                if (this.data.currentUser && this.data.currentUser.isAdmin) {
+                    adminSection.classList.remove('hidden');
+                    
+                    const container = document.getElementById('reports-list');
+                    container.innerHTML = '';
+
+                    if (this.data.reports.length === 0) {
+                        container.innerHTML = `
+                            <div class="bg-gray-100 dark:bg-gray-700/50 rounded-xl p-8 text-center">
+                                <i class="fa-solid fa-flag text-4xl text-gray-400 mb-3"></i>
+                                <p class="text-gray-500 dark:text-gray-400">لا توجد إبلاغات</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    [...this.data.reports].reverse().forEach(report => {
+                        const date = new Date(report.date).toLocaleDateString('ar-EG');
+                        const typeColors = {
+                            complaint: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+                            suggestion: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+                            technical: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                            other: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                        };
+                        
+                        const card = document.createElement('div');
+                        card.className = "bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-200 dark:border-gray-700";
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 dark:text-white">${report.name}</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">${date}</p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold ${typeColors[report.type]}">${report.type}</span>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300">${report.details}</p>
+                        `;
+                        container.appendChild(card);
+                    });
+                } else {
+                    adminSection.classList.add('hidden');
+                }
+            },
+
+            // --- Password Management ---
+            handleChangePassword(e) {
+                e.preventDefault();
+                const current = document.getElementById('current-password').value;
+                const newPass = document.getElementById('new-password').value;
+                const confirm = document.getElementById('confirm-password').value;
+
+                if (current !== this.data.currentUser.password) {
+                    this.showToast('كلمة المرور الحالية غير صحيحة', 'error');
+                    return;
+                }
+
+                if (newPass !== confirm) {
+                    this.showToast('كلمات المرور غير متطابقة', 'error');
+                    return;
+                }
+
+                // If Owner, change directly
+                if (this.data.currentUser.role === 'owner') {
+                    const user = this.data.users.find(u => u.id === this.data.currentUser.id);
+                    if (user) {
+                        user.password = newPass;
+                        this.data.currentUser.password = newPass;
+                        localStorage.setItem('poptop_session', JSON.stringify(this.data.currentUser));
+                        this.saveData();
+                        this.showToast('تم تغيير كلمة المرور بنجاح', 'success');
+                        e.target.reset();
+                    }
+                } else {
+                    // Request approval from owner
+                    const request = {
+                        id: Date.now(),
+                        userId: this.data.currentUser.id,
+                        username: this.data.currentUser.username,
+                        newPassword: newPass,
+                        status: 'pending',
+                        date: Date.now()
+                    };
+                    this.data.passwordRequests.push(request);
+                    this.saveData();
+                    this.showToast('تم إرسال طلب التغيير للمالك', 'info');
+                    e.target.reset();
+                }
+            },
+
+            renderPasswordRequests() {
+                const tbody = document.getElementById('password-requests-table');
+                tbody.innerHTML = '';
+                
+                const pending = this.data.passwordRequests.filter(r => r.status === 'pending');
+                document.getElementById('password-requests-count').textContent = pending.length;
+
+                if (this.data.passwordRequests.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">لا توجد طلبات</td></tr>';
+                    return;
+                }
+
+                [...this.data.passwordRequests].reverse().forEach(req => {
+                    const tr = document.createElement('tr');
+                    const date = new Date(req.date).toLocaleDateString('ar-EG');
+                    const statusColors = {
+                        pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30',
+                        approved: 'bg-green-100 text-green-800 dark:bg-green-900/30',
+                        rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30'
+                    };
+                    
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 font-medium">${req.username}</td>
+                        <td class="px-6 py-4 text-xs">${date}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-bold ${statusColors[req.status]}">${req.status}</span></td>
+                        <td class="px-6 py-4">
+                            ${req.status === 'pending' ? `
+                                <button onclick="app.approvePasswordChange(${req.id})" class="text-green-600 hover:text-green-800 ml-2" title="موافقة">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button onclick="app.rejectPasswordChange(${req.id})" class="text-red-600 hover:text-red-800" title="رفض">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            ` : '-'}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            approvePasswordChange(reqId) {
+                const req = this.data.passwordRequests.find(r => r.id === reqId);
+                if (req) {
+                    const user = this.data.users.find(u => u.id === req.userId);
+                    if (user) {
+                        user.password = req.newPassword;
+                        req.status = 'approved';
+                        this.saveData();
+                        this.showToast('تمت الموافقة على تغيير كلمة المرور', 'success');
+                        this.renderPasswordRequests();
+                    }
+                }
+            },
+
+            rejectPasswordChange(reqId) {
+                const req = this.data.passwordRequests.find(r => r.id === reqId);
+                if (req) {
+                    req.status = 'rejected';
+                    this.saveData();
+                    this.showToast('تم رفض الطلب', 'info');
+                    this.renderPasswordRequests();
+                }
+            },
+
+            // --- Employee Management ---
+
+            renderEmployees() {
+                const tbody = document.getElementById('employees-table');
+                tbody.innerHTML = '';
+
+                // Populate rate select
+                const rateSelect = document.getElementById('rate-emp-select');
+                rateSelect.innerHTML = '<option value="">-- اختر موظف --</option>';
+
+                const employees = this.data.users.filter(u => u.role === 'employee' || u.role === 'assistant');
+
+                if (employees.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">لا يوجد موظفين</td></tr>';
+                    return;
+                }
+
+                employees.forEach(emp => {
+                    // Add to select
+                    const opt = document.createElement('option');
+                    opt.value = emp.id;
+                    opt.textContent = emp.fullname || emp.username;
+                    rateSelect.appendChild(opt);
+
+                    // Check Online Status
+                    const isOnline = this.isEmployeeOnline(emp.id);
+                    const statusClass = isOnline ? 'bg-green-100 text-green-800 dark:bg-green-900/30' : 'bg-gray-100 text-gray-600 dark:bg-gray-700';
+                    const statusText = isOnline ? 'متصل' : 'غير متصل';
+                    const statusIcon = isOnline ? 'fa-circle text-green-500' : 'fa-circle text-gray-400';
+
+                    // Table row
+                    const tr = document.createElement('tr');
+                    const roleText = emp.role === 'assistant' ? 'أدمن' : 'عامل عادي';
+                    const avgRating = this.getEmployeeAverageRating(emp.id);
+                    const photo = emp.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(emp.fullname || emp.username) + '&background=3b82f6&color=fff&size=128';
+                    
+                    tr.innerHTML = `
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${photo}" alt="${emp.fullname || emp.username}" class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                                <div>
+                                    <div class="font-bold text-gray-900 dark:text-white">${emp.fullname || emp.username}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-medium">${emp.username}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${emp.role === 'assistant' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30'}">${roleText}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${statusClass} flex items-center gap-1 w-fit">
+                                <i class="fa-solid ${statusIcon} text-xs"></i>
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-yellow-500 font-bold">${avgRating ? avgRating.toFixed(1) + ' ★' : 'لا يوجد'}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button onclick="app.toggleEmployeeRole(${emp.id})" class="text-blue-600 hover:text-blue-800 ml-2" title="تغيير الدور">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                            </button>
+                            <button onclick="app.deleteEmployee(${emp.id})" class="text-red-600 hover:text-red-800" title="حذف">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            },
+
+            toggleEmployeeRole(empId) {
+                const emp = this.data.users.find(u => u.id === empId);
+                if (emp) {
+                    emp.role = emp.role === 'assistant' ? 'employee' : 'assistant';
+                    this.saveData();
+                    this.showToast('تم تغيير الدور الوظيفي', 'success');
+                    this.renderEmployees();
+                }
+            },
+
+            deleteEmployee(empId) {
+                if (confirm('هل أنت متأكد من حذف هذا الموظف؟')) {
+                    this.data.users = this.data.users.filter(u => u.id !== empId);
+                    this.saveData();
+                    this.showToast('تم حذف الموظف', 'info');
+                    this.renderEmployees();
+                }
+            },
+
+            handleRateEmployee(e) {
+                e.preventDefault();
+                const empId = parseInt(document.getElementById('rate-emp-select').value);
+                const rating = parseInt(document.getElementById('rate-value').value);
+                const comment = document.getElementById('rate-comment').value.trim();
+
+                if (!empId) {
+                    this.showToast('اختر موظف أولاً', 'error');
+                    return;
+                }
+
+                const newRating = {
+                    id: Date.now(),
+                    employeeId: empId,
+                    rating,
+                    comment,
+                    date: Date.now(),
+                    week: this.getCurrentWeek()
+                };
+
+                this.data.employeeRatings.push(newRating);
+                this.saveData();
+                this.showToast('تم حفظ التقييم', 'success');
+                e.target.reset();
+                this.renderEmployees();
+            },
+
+            getCurrentWeek() {
+                const now = new Date();
+                const start = new Date(now.getFullYear(), 0, 1);
+                const diff = now - start;
+                const oneWeek = 1000 * 60 * 60 * 24 * 7;
+                return Math.floor(diff / oneWeek);
+            },
+
+            getEmployeeAverageRating(empId) {
+                const ratings = this.data.employeeRatings.filter(r => r.employeeId === empId);
+                if (ratings.length === 0) return null;
+                const sum = ratings.reduce((acc, r) => acc + r.rating, 0);
+                return sum / ratings.length;
+            },
+
+            isEmployeeOnline(empId) {
+                // Check if employee is currently logged in
+                const activeSessions = this.data.users.filter(u => u.id === empId && u.lastSeen);
+                if (activeSessions.length === 0) return false;
+                
+                const emp = this.data.users.find(u => u.id === empId);
+                if (!emp || !emp.lastSeen) return false;
+                
+                // Consider online if last activity within 5 minutes
+                const fiveMinutes = 5 * 60 * 1000;
+                return (Date.now() - emp.lastSeen) < fiveMinutes;
+            },
+
+            updateUserActivity() {
+                if (this.data.currentUser && this.data.currentUser.isAdmin) {
+                    const user = this.data.users.find(u => u.id === this.data.currentUser.id);
+                    if (user) {
+                        user.lastSeen = Date.now();
+                        this.saveData();
+                    }
+                }
+            },
+
+            renderMyRatings() {
+                const container = document.getElementById('my-ratings-container');
+                container.innerHTML = '';
+
+                const myRatings = this.data.employeeRatings.filter(r => r.employeeId === this.data.currentUser.id);
+
+                if (myRatings.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-gray-100 dark:bg-gray-700/50 rounded-xl p-8 text-center">
+                            <i class="fa-solid fa-star text-4xl text-gray-400 mb-3"></i>
+                            <p class="text-gray-500 dark:text-gray-400">لا توجد تقييمات حتى الآن</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const avgRating = this.getEmployeeAverageRating(this.data.currentUser.id);
+
+                // Average Card
+                const avgCard = document.createElement('div');
+                avgCard.className = "bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-xl p-6 text-center";
+                avgCard.innerHTML = `
+                    <div class="text-5xl font-bold mb-2">${avgRating.toFixed(1)}</div>
+                    <div class="text-lg">متوسط التقييم</div>
+                    <div class="text-yellow-200 text-2xl mt-2">${'★'.repeat(Math.round(avgRating))}</div>
+                `;
+                container.appendChild(avgCard);
+
+                // Individual Ratings
+                [...myRatings].reverse().forEach(rating => {
+                    const date = new Date(rating.date).toLocaleDateString('ar-EG');
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">${date}</span>
+                            <span class="text-yellow-500 font-bold text-lg">${rating.rating} ★</span>
+                        </div>
+                        ${rating.comment ? `<p class="text-gray-700 dark:text-gray-300">${rating.comment}</p>` : ''}
+                    `;
+                    container.appendChild(card);
+                });
+            }
+        };
+
+        // Run App
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+
+    </script>
+</body>
+</html>
